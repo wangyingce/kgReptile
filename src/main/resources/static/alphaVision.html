@@ -1,0 +1,252 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>ATE - alpha</title>
+    <style>::-webkit-scrollbar{display:none;}html,body{overflow:hidden;margin:0;}</style>
+</head>
+<body>
+<div id="mountNode">
+    <svg style="position: absolute; overflow: visible; padding: 10px; top: 461px; left: 1251px; width: 85px; height: 200px;">
+        <g class="legendCells">
+            <g class="cell" transform="translate(0, 0)">
+                <circle class="swatch" r="10" style="fill: rgb(114, 183, 186);stroke:rgb(255,255,255); "></circle>
+                <text class="label" transform="translate( 15, 5)"style="fill:#fff">赔案号</text></g>
+            <g class="cell" transform="translate(0, 29)">
+                <circle class="swatch" r="10" style="fill: rgb(115, 163, 115);stroke:rgb(255,255,255); "></circle>
+                <text class="label" transform="translate( 15, 5)"style="fill:#fff">报案电话</text></g>
+            <g class="cell" transform="translate(0, 58)">
+                <circle class="swatch" r="10" style="fill: rgb(217, 105, 100);stroke:rgb(255,255,255); "></circle>
+                <text class="label" transform="translate( 15, 5)"style="fill:#fff">被保险人</text></g>
+            <g class="cell" transform="translate(0, 87)">
+                <circle class="swatch" r="10" style="fill: rgb(114, 137, 171);stroke:rgb(255,255,255); "></circle>
+                <text class="label" transform="translate( 15, 5)"style="fill:#fff">保单号</text></g>
+            <g class="cell" transform="translate(0, 116)">
+                <circle class="swatch" r="10" style="fill: rgb(227, 155, 133);stroke:rgb(255,255,255); "></circle>
+                <text class="label" transform="translate( 15, 5)"style="fill:#fff">收款人</text></g>
+            <g class="cell" transform="translate(0, 145)">
+                <circle class="swatch" r="10" style="fill: rgb(229, 221, 162);stroke:rgb(255,255,255); "></circle>
+                <text class="label" transform="translate( 15, 5)"style="fill:#fff">银行卡</text></g>
+        </g>
+    </svg>
+</div>
+<script src="js/common.js"></script>
+<script>/*Fixing iframe window.innerHeight 0 issue in Safari*/document.body.clientHeight;</script>
+<script src="https://gw.alipayobjects.com/os/antv/pkg/_antv.g6-3.0.0/build/g6.js"></script>
+<script src="https://gw.alipayobjects.com/os/antv/pkg/_antv.g6-2.2.0/build/g6.js"></script>
+<script src="https://gw.alipayobjects.com/os/antv/pkg/_antv.g6-2.2.6/build/plugins.js"></script>
+<script src="https://gw.alipayobjects.com/os/antv/assets/lib/jquery-3.2.1.min.js"></script>
+<script src="https://gw.alipayobjects.com/os/antv/assets/lib/d3-4.13.0.min.js"></script>
+<script>
+    $(function() {
+        $.ajax({
+            type: "get",
+            url: "/visionAllData",
+            data: {
+                registNo:getArgsFromHref(window.location.href,"registNo"),
+                policyNo:getArgsFromHref(window.location.href,"policyNo"),
+                insuredName:getArgsFromHref(window.location.href,"insuredName"),
+                token:getArgsFromHref(window.location.href,"token")
+            },
+            contentType: "application/json; charset=utf-8",
+            dataType: "json",
+            success: function(das) {
+//                alert(document.getElementById("warn").innerHTML);
+                if(das!=null&&das!=""&&das!=undefined&&das.error!=null&&das.error!=""&&das.error!=undefined){
+                    alert(das.error);
+                    return false;
+                }
+                var inscl = '#D96964';//深红
+                var plycl = '#7289AB';//深蓝 -> 紫色
+                var clmcl = '#72B7BA';//天蓝
+                var mblcl = '#73A373';//绿色
+                var paycl = '#E39B85';//红色
+                var crdcl = '#E5DDA2';//浅金
+                /**START开始渲染G6图像引擎-------------------------------------*/
+                $("#mountNode").css('backgroundColor', '#333333');
+                var Mapper = G6.Plugins['tool.d3.mapper'];
+                var _d = d3,
+                    forceSimulation = _d.forceSimulation,
+                    forceLink = _d.forceLink,
+                    forceManyBody = _d.forceManyBody,
+                    forceX = _d.forceX,
+                    forceY = _d.forceY,
+                    forceCollide = _d.forceCollide;
+
+                var nodeMap = {};
+                var nodeSizeMapper = new Mapper('node', 'degree', 'size', [20,20,20,20,20,40], {
+                    legendCfg: null
+                });
+                var nodeColorMapper = new Mapper('node', 'type', 'color', [clmcl,mblcl,inscl,plycl,paycl,crdcl]);
+                var G = G6.G;
+                var simulation = void 0;
+                var graph = new G6.Graph({
+                    container: 'mountNode',
+                    height: window.innerHeight,
+                    plugins: [nodeSizeMapper],
+                    modes: {
+                        default: ['rightPanCanvas']
+                    },
+                    layout: function layout(nodes, edges) {
+                        if (simulation) {
+                            simulation.alphaTarget(0.3).restart();
+                        } else {
+                            simulation = forceSimulation(nodes).force('charge', forceManyBody().strength(-100)).force('link', forceLink(edges).id(function(model) {
+                                return model.id;
+                            })).force('collision', forceCollide().radius(function(model) {
+                                return model.size / 2 * 1.2;
+                            })).force('y', forceY()).force('x', forceX()).on('tick', function() {
+                                graph.updateNodePosition();
+                            });
+                        }
+                    }
+                });
+                graph.node({
+                    style: function style(model) {
+                        if (model.type === '被保险人') {
+                            return {
+                                fill: inscl,
+                                stroke: '#fff'
+                            };
+                        }
+                        if (model.type === '保单号') {
+                            return {
+                                fill: plycl,
+                                stroke: '#fff'
+                            };
+                        }
+                        if (model.type === '赔案号') {
+                            return {
+                                fill: clmcl,
+                                stroke: '#fff'
+                            };
+                        }
+                        if (model.type === '报案电话') {
+                            return {
+                                fill: mblcl,
+                                stroke: '#fff'
+                            };
+                        }
+                        if (model.type === '收款人') {
+                            return {
+                                fill: paycl,
+                                stroke: '#fff'
+                            };
+                        }
+                        if (model.type === '银行卡') {
+                            return {
+                                fill: crdcl,
+                                stroke: '#fff'
+                            };
+                        }
+                        return {
+                            stroke: '#fff'
+                        };
+                    },
+                    label: function label(model) {
+                        if(model.type=="保单号"){
+                            return {
+                                text: model.properties['name']+'\n起期:'+model.properties['起期']+'\n止期:'+model.properties['止期'],
+                                stroke: null,
+                                fill: '#fff'
+                            };
+                        }else if(model.type=="赔案号"){
+                            return {
+                                text: model.properties['name']+'\n出险:'+model.properties['出险']+'\n报案:'+model.properties['报案'],
+                                stroke: null,
+                                fill: '#fff'
+                            };
+                        }else{
+                            return {
+                                text: model.properties['name'],
+                                stroke: null,
+                                fill: '#fff'
+                            };
+                        }
+                    }
+                });
+                graph.edge({
+                    style: function style() {
+                        return {
+                            stroke: '#b3b3b3',
+                            lineWidth: 1
+                        };
+                    }
+                });
+                graph.read(das);
+                graph.translate(graph.getWidth() / 2, graph.getHeight() / 2);
+
+                // 拖拽节点交互
+                var subject = void 0; // 逼近点
+                graph.on('node:mousedown', function(ev) {
+                    if (ev.domEvent.button === 0) {
+                        subject = simulation.find(ev.x, ev.y);
+                    }
+                });
+
+                graph.on('node:dragstart', function(ev) {
+                    subject && simulation.alphaTarget(0.3).restart();
+//                    simulation.alphaTarget(0.3).restart();
+
+                });
+
+                graph.on('node:drag', function(ev) {
+                    if (subject) {
+                        subject.fx = ev.x;
+                        subject.fy = ev.y;
+                    }
+                });
+
+//                graph.on('mouseup', resetState);
+//                graph.on('canvas:mouseleave', resetState);
+
+                function resetState() {
+                    if (subject) {
+                        simulation.alphaTarget(0);
+                        subject.fx = null;
+                        subject.fy = null;
+                        subject = null;
+                    }
+                }
+
+                // 鼠标移入节点显示 label
+                function tryHideLabel(node) {
+                    var model = node.getModel();
+                    var label = node.getLabel();
+                    var labelBox = label.getBBox();
+                    if(model.type!='被保险人'&&(labelBox.maxX - labelBox.minX > model.size)){
+                        label.hide();
+                        graph.draw();
+                    }
+                }
+                var nodes = graph.getNodes();
+                var edges = graph.getEdges();
+
+                edges.forEach(function(edge) {
+                    edge.getGraphicGroup().set('capture', false); // 移除边的捕获，提升图形拾取效率
+                });
+
+                nodes.forEach(function(node) {
+                    tryHideLabel(node);
+                });
+
+                graph.on('node:mouseenter', function(ev) {
+                    var item = ev.item;
+                    item.getLabel().show();
+                    graph.toFront(item);
+                    graph.draw();
+                });
+
+                graph.on('node:mouseleave', function(ev) {
+                    var item = ev.item;
+                    tryHideLabel(item);
+                });
+                /**END结束渲染G6图像引擎-------------------------------------*/
+            },
+            error: function(err) {
+            }
+        });
+    });
+</script>
+</body>
+</html>
