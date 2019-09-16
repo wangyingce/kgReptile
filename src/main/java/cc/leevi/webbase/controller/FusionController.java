@@ -1,25 +1,14 @@
 package cc.leevi.webbase.controller;
 
-import cc.leevi.webbase.pipeline.Neo4jSavePipeline;
-import cc.leevi.webbase.service.BaikeSpiderService;
 import cc.leevi.webbase.service.KgCommonService;
 import cc.leevi.webbase.service.KgFusionService;
 import cc.leevi.webbase.utils.DateUtils;
-import com.alibaba.fastjson.JSON;
-import com.alibaba.fastjson.JSONObject;
-import org.apache.commons.collections.map.HashedMap;
-import org.apache.commons.io.FileUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
-import us.codecraft.webmagic.Spider;
-import us.codecraft.webmagic.pipeline.ConsolePipeline;
-import us.codecraft.webmagic.pipeline.JsonFilePipeline;
 
-import java.io.File;
 import java.util.Date;
-import java.util.Map;
 
 import static com.alibaba.fastjson.JSON.toJSON;
 
@@ -65,9 +54,5 @@ public class FusionController {
     }
 
 
-    @GetMapping("sdn4j")
-    public Object spiderData() throws Exception {
-        Spider.create(new BaikeSpiderService()).addUrl("https://baike.baidu.com/item/保单").addPipeline(new ConsolePipeline()).addPipeline(new Neo4jSavePipeline()).thread(5).run();
-        return null;
-    }
+
 }

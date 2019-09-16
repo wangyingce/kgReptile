@@ -1,6 +1,7 @@
 package cc.leevi.webbase.service;
 
 import cc.leevi.webbase.utils.*;
+import cc.leevi.webbase.vo.BaikeDataVo;
 import cc.leevi.webbase.vo.PumpClaimMapVo;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
@@ -132,5 +133,37 @@ public class KgFusionService {
         neo4jJdbcTemplate.update(OperAlphaUtils.cLcAlpha2RelationshipLines(filePath,"c_Payee_Nme2c_Payee_No",flag));
         neo4jJdbcTemplate.update(OperAlphaUtils.cLcAlpha2RelationshipLines(filePath,"c_Clm_No2c_Rptman_Nme",flag));
         neo4jJdbcTemplate.update(OperAlphaUtils.cLcAlpha2RelationshipLines(filePath,"c_Rptman_Nme2c_Rptman_Tel",flag));
+    }
+
+    public void createBaikeRelation(Map<String, BaikeDataVo> baikeAllMap,String title) {
+        Set<String> set = baikeAllMap.keySet();
+        for (String keyString : set) {
+//            System.out.println("keyString:"+keyString);
+            String father = baikeAllMap.get(keyString).getFather();
+            StringBuffer relationCql =  new StringBuffer("");
+            if(father!=null&&!"".equals(father)){
+                relationCql.append("MATCH (aa:节点 {name:'" + baikeAllMap.get(father).getName() + "'}), (bb:节点 {name:'" + baikeAllMap.get(keyString).getName()+ "'}) MERGE (aa) -[:包含{name:''}]-> (bb)");
+            }else{
+                relationCql.append("MATCH (aa:标题 {name:'" + title + "'}), (bb:节点 {name:'" + baikeAllMap.get(keyString).getName()+ "'}) MERGE (aa) -[:包含{name:''}]-> (bb)");
+            }
+            neo4jJdbcTemplate.update(relationCql.toString());
+        }
+    }
+
+    public void createBaikeNode(BaikeDataVo baikeVo) {
+//        System.out.println("value:"+baikeVo.getValue());
+        StringBuffer nodeCql = new StringBuffer("");
+        nodeCql.append("MERGE (:节点 {name:'" + baikeVo.getName() + "',value:'"+baikeVo.getValue()+"',url:'"+ baikeVo.getUrl() + "' })");
+//        nodeCql.append(" {value:'" + baikeVo.getValue() + "' ");
+//        nodeCql.append(" ,url:'"+ baikeVo.getUrl() + "' ");
+//        nodeCql.append( "})");
+        neo4jJdbcTemplate.update(nodeCql.toString());
+    }
+
+    public void createBaikeTitle(String title) {
+        List <Map <String, Object>> findList = neo4jJdbcTemplate.queryForList("MATCH (na:标题) where na.name='" + title + "' return na");
+        if (findList == null || findList.size() <= 0) {
+            neo4jJdbcTemplate.update("CREATE (na:标题{name:'" + title + "'}) ");
+        }
     }
 }

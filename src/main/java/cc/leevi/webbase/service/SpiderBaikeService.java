@@ -7,9 +7,9 @@ import us.codecraft.webmagic.processor.PageProcessor;
 import java.util.Iterator;
 
 /**
- * 百度百科爬虫服务
+ * 百科爬虫服务
  */
-public class BaikeSpiderService implements PageProcessor {
+public class SpiderBaikeService implements PageProcessor {
     private Site site = Site.me().setRetryTimes(3).setSleepTime(100);
     @Override
     public Site getSite() {
