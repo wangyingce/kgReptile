@@ -29,12 +29,13 @@ public class Neo4jSavePipeline implements Pipeline {
         /**处理resultItems*/
         String wAInf =resultItems.getAll().get("readme").toString();
         String title = resultItems.getAll().get("title").toString();
+        String titleValue = resultItems.getAll().get("titleValue").toString();
         String wIndex = wAInf.substring(wAInf.indexOf("目录")+2,wAInf.indexOf("  <>  <>  <> "));
-        System.out.println("SSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSS");
+//        System.out.println("SSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSS");
+//        System.out.println(wAInf);
         String[] wordIndexs = wIndex.split(">");
-        List<BaikeDataVo> baikeVos = new ArrayList<BaikeDataVo>();
         Map<String,BaikeDataVo> baikeAllMap = new HashMap <>();
-        kgFusionService.createBaikeTitle(title);
+        kgFusionService.createBaikeTitle(title,titleValue);
         for(int i = 0;i<wordIndexs.length;i++){
             BaikeDataVo baikeVo =  new BaikeDataVo();
             //目录

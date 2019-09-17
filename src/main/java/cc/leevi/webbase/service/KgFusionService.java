@@ -160,10 +160,10 @@ public class KgFusionService {
         neo4jJdbcTemplate.update(nodeCql.toString());
     }
 
-    public void createBaikeTitle(String title) {
+    public void createBaikeTitle(String title,String titleValue) {
         List <Map <String, Object>> findList = neo4jJdbcTemplate.queryForList("MATCH (na:标题) where na.name='" + title + "' return na");
         if (findList == null || findList.size() <= 0) {
-            neo4jJdbcTemplate.update("CREATE (na:标题{name:'" + title + "'}) ");
+            neo4jJdbcTemplate.update("CREATE (na:标题{name:'" + title + "',titleValue:'"+titleValue+"'}) ");
         }
     }
 }
